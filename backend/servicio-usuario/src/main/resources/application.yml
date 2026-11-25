@@ -1,0 +1,28 @@
+
+server:
+  port: 8081
+
+spring:
+  application:
+    name: servicio-usuarios
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/usuarios_db}
+    username: ${DB_USUARIO:admin_agua}
+    password: ${DB_CONTRASENA}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
