@@ -1,0 +1,27 @@
+
+services:
+  postgres-usuarios:
+    image: postgres:17
+    container_name: postgres-usuarios
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: usuarios_db
+      POSTGRES_USER: ${DB_USUARIO}
+      POSTGRES_PASSWORD: ${DB_CONTRASENA}
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
+    volumes:
+      - datos-usuarios:/var/lib/postgresql/data
+
+    networks:
+      - red-calidad-agua
+
+volumes:
+  datos-usuarios:
+
+networks:
+  red-calidad-agua:
+    driver: bridge
