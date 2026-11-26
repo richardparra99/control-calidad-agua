@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -18,7 +19,7 @@ public class DeactivateUserController {
     private final DeactivateUserHandler handler;
 
     @PatchMapping("/{id}/deactivate")
-    public ResponseEntity<Void> deactivate(
+    public ResponseEntity<Map<String, Object>> deactivate(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt) {
 
@@ -26,6 +27,12 @@ public class DeactivateUserController {
 
         handler.execute(id, adminId);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "User deactivated successfully",
+                        "id", id,
+                        "active", false
+                )
+        );
     }
 }

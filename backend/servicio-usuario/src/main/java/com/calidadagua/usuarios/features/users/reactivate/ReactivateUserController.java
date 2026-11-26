@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -16,11 +17,17 @@ public class ReactivateUserController {
     private final ReactivateUserHandler handler;
 
     @PatchMapping("/{id}/reactivate")
-    public ResponseEntity<Void> reactivate(
+    public ResponseEntity<Map<String, Object>> reactivate(
             @PathVariable UUID id) {
 
         handler.execute(id);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "User reactivated successfully",
+                        "id", id,
+                        "active", true
+                )
+        );
     }
 }

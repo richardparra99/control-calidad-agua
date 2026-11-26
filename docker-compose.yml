@@ -1,4 +1,5 @@
 services:
+
   postgres-usuarios:
     image: postgres:17
     container_name: postgres-usuarios
@@ -15,11 +16,47 @@ services:
     volumes:
       - datos-usuarios:/var/lib/postgresql/data
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USUARIO} -d usuarios_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
     networks:
       - red-calidad-agua
 
+
+  user-service:
+    build:
+      context: ./backend/servicio-usuario
+      dockerfile: Dockerfile
+
+    container_name: user-service
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8081:8081"
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres-usuarios:5432/usuarios_db
+      DB_USUARIO: ${DB_USUARIO}
+      DB_CONTRASENA: ${DB_CONTRASENA}
+
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+    depends_on:
+      postgres-usuarios:
+        condition: service_healthy
+
+    networks:
+      - red-calidad-agua
+
+
 volumes:
   datos-usuarios:
+
 
 networks:
   red-calidad-agua:
