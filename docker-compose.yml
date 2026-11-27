@@ -17,7 +17,7 @@ services:
       - datos-usuarios:/var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USUARIO} -d usuarios_db"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d usuarios_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,7 +41,6 @@ services:
       DB_URL: jdbc:postgresql://postgres-usuarios:5432/usuarios_db
       DB_USUARIO: ${DB_USUARIO}
       DB_CONTRASENA: ${DB_CONTRASENA}
-
       JWT_SECRET: ${JWT_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
@@ -54,8 +53,64 @@ services:
       - red-calidad-agua
 
 
+  postgres-locations:
+    image: postgres:17
+    container_name: postgres-locations
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: locations_db
+      POSTGRES_USER: ${LOCATION_DB_USER}
+      POSTGRES_PASSWORD: ${LOCATION_DB_PASSWORD}
+
+    ports:
+      - "127.0.0.1:15433:5432"
+
+    volumes:
+      - location-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d locations_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - red-calidad-agua
+
+
+  location-service:
+    build:
+      context: ./backend/servicio-localidades
+      dockerfile: Dockerfile
+
+    container_name: location-service
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8082:8082"
+
+    environment:
+      LOCATION_DB_URL: jdbc:postgresql://postgres-locations:5432/locations_db
+      LOCATION_DB_USER: ${LOCATION_DB_USER}
+      LOCATION_DB_PASSWORD: ${LOCATION_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      USER_SERVICE_URL: http://user-service:8081
+
+    depends_on:
+      postgres-locations:
+        condition: service_healthy
+
+      user-service:
+        condition: service_started
+
+    networks:
+      - red-calidad-agua
+
+
 volumes:
   datos-usuarios:
+  location-data:
 
 
 networks:
